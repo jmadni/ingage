@@ -1,0 +1,138 @@
+﻿
+@{
+    ViewBag.Title = "Notes";
+}
+
+<h2>Notes</h2>
+
+
+<div class="row" style="padding:35px 15px">
+    <div class="col-md-12">
+        <div id="loading">
+            <h4 class="text-center">Loading...</h4>
+        </div>
+        <div id="pageData" style="display:none">
+            <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#myModal">Add Notebook</button>
+            <div class="clearfix"></div><br />
+
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Notebook Name</th>
+                        <th>Created Date and Time</th>
+                        <th>IsShared</th>
+                        <th>OneNote Web URL</th>
+                    </tr>
+                </thead>
+                <tbody id="notesTableBody">
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+<!-- Modal -->
+<div id="myModal" class="modal fade" role="dialog">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Add Notebook</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="control-label">Notebook Name: </label>
+                            <input type="text" class="form-control" id="addNoteText" />
+                        </div>
+                        <div class="form-group">
+                            <span>This will add a Notebook on your OneDrive.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                @*<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>*@
+                <button type="button" class="btn btn-primary" id="addNoteButton" onclick="addNoteButtonClick()">Add</button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        async function callBack() {
+
+            try {
+                $("#loading").show();
+                $("#pageData").hide();
+
+                var userNotes = await client.api("/me/onenote/notebooks").get();
+                console.log(userNotes);
+
+                $("#notesTableBody").html('');
+
+                if (userNotes && userNotes.value.length > 0) {
+                    userNotes.value.forEach(function (u) {
+                        var html = `<tr>
+                                        <td>` + u.displayName + `</td>
+                                        <td>` + u.createdDateTime + `</td>
+                                        <td>` + u.isShared + `</td>
+                                        <td><a href="` + u.links.oneNoteWebUrl.href + `">` + u.links.oneNoteWebUrl.href + `</a></td>
+                                    </tr>`;
+                        $("#notesTableBody").append(html);
+
+                    });
+                }
+
+                $("#loading").hide();
+                $("#pageData").show();
+
+            } catch (error) {
+                throw error;
+            }
+        }
+
+        async function addNoteButtonClick() {
+            var note = $("#addNoteText").val();
+
+            if (!note) {
+                alert("Please enter a notebook name");
+                return;
+            }
+
+            const notebook = {
+                displayName: note
+            };
+
+            $("#addNoteButton").addClass('disabled');
+
+            let res = await client.api('/me/onenote/notebooks')
+                .post(notebook);
+
+            if (res) {
+                alert("Notebook created successfully!");
+            }
+            
+            callBack();
+            $("#addNoteButton").removeClass('disabled');
+            $('#myModal').modal('hide');
+        }
+
+        function clearNotebookName() {
+            $("#addNoteText").val('');
+        }
+
+        $(document).ready(function () {
+            $('#myModal').on('show.bs.modal', function (e) {
+                clearNotebookName();
+            });
+        });
+    </script>
+} 

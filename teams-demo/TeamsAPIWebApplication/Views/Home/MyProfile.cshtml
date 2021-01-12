@@ -1,0 +1,45 @@
+﻿
+@{
+    ViewBag.Title = "My Profile";
+}
+
+<style>
+    span{
+        padding-left:15px
+    }
+</style>
+
+<h2>My Profile</h2>
+
+<div class="row" style="padding:35px 15px">
+    <div class="col-md-12">
+        <div id="loading">
+            <h4 class="text-center">Loading...</h4>
+        </div>
+        <div id="pageData" style="display:none">
+            <div class="form-group">
+                <label class="control-label">Full Name: </label>
+                <span id="profileFullname"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label">Email: </label>
+                <span id="profileEmail"></span>
+            </div>
+
+            <a href="https://account.microsoft.com/profile/" class="btn btn-primary" data-toggle="tooltip" title="Edit Profile on Microsoft.com" target="_blank">Edit Profile</a>
+        </div>
+    </div>
+</div>
+
+@section scripts{
+    <script type="text/javascript">
+        function callBack() {
+            $("#profileFullname").html(userDetails.displayName);
+            $("#profileEmail").html(userDetails.userPrincipalName);
+
+            $("#loading").hide();
+            $("#pageData").show();
+        }
+    </script>
+} 
